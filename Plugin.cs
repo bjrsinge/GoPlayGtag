@@ -3,8 +3,9 @@ using BepInEx;
 using UnityEngine;
 using UnityEngine.UI;
 using Utilla;
+using Bepinject;
 
-namespace GorillaTagModTemplateProject
+namespace GoPlayGtag
 {
     /// <summary>
     /// This is your mod's main class.
@@ -13,13 +14,18 @@ namespace GorillaTagModTemplateProject
     /* This attribute tells Utilla to look for [ModdedGameJoin] and [ModdedGameLeave] */
     [ModdedGamemode]
     [BepInDependency("org.legoandmars.gorillatag.utilla", "1.5.0")]
-    [BepInPlugin(PluginInfo.GUID, PluginInfo.Name, PluginInfo.Version)]
+    [BepInPlugin("com.bjrsinge.gorillatag.GoPlayGtag", "GoPlayGtag", "1.0.1")]
     public class Plugin : BaseUnityPlugin
     {
         bool inRoom;
-        // public bool antiLoop, enabled, loaded;
         public GameObject forestSign;
         public Text signText;
+        public bool init;
+
+        void Awake()
+        {
+            // will totally not add ci support here :p
+        }
 
         void Start()
         {
@@ -28,22 +34,14 @@ namespace GorillaTagModTemplateProject
 
         void OnGameInitialized(object sender, EventArgs e)
         {
-            forestSign = GameObject.Find("Level/lower level/UI/Tree Room Texts/WallScreenForest");
+            init = true;
+            forestSign = GameObject.Find("Environment Objects/LocalObjects_Prefab/TreeRoom/TreeRoomInteractables/UI/Tree Room Texts/WallScreenForest");
         }
 
         void OnEnable()
         {
-            HarmonyPatches.ApplyHarmonyPatches();
-        }
-
-        void OnDisable()
-        {
-            HarmonyPatches.RemoveHarmonyPatches();
-        }
-        void Update()
-        {
-            if (forestSign.GetComponent<Text>().text != "GO PLAY GORILLA TAG")
-            { 
+            if (init)
+            {
                 if (forestSign != null)
                 {
                     signText = forestSign.GetComponent<Text>();
@@ -51,7 +49,41 @@ namespace GorillaTagModTemplateProject
                 }
                 else
                 {
-                    Debug.Log("forestSign doesn't exist in OnGameInitialized");
+                    Debug.Log("forestSign doesn't exist in OnEnable");
+                }
+            }
+        }
+
+        void OnDisable()
+        {
+            if (init)
+            {
+                if (forestSign != null)
+                {
+                    signText = forestSign.GetComponent<Text>();
+                    signText.text = "WELCOME TO GORILLA TAG!\r\n\r\nHEAD OUTSIDE TO AUTOMATICALLY JOIN A PUBLIC GAME, OR USE THE TERMINAL TO JOIN A SPECIFIC ROOM OR ADJUST YOUR SETTINGS.";
+                }
+                else
+                {
+                    Debug.Log("forestSign doesn't exist in OnDisable");
+                }
+            }
+        }
+        void Update()
+        {
+            if (init)
+            {
+                if (forestSign.GetComponent<Text>().text != "GO PLAY GORILLA TAG")
+                {
+                    if (forestSign != null)
+                    {
+                        signText = forestSign.GetComponent<Text>();
+                        signText.text = "GO PLAY GORILLA TAG";
+                    }
+                    else
+                    {
+                        Debug.Log("forestSign doesn't exist in OnGameInitialized");
+                    }
                 }
             }
         }
